@@ -24,6 +24,20 @@ public class CharStats : MonoBehaviour
     public string equippedWpn;
     public string equippedArmor;
     public Sprite characterPortrait;
+    public Sprite spriteHead;
+
+    [Header("Portrait Expressions")]
+    public Sprite neutralPortrait;
+    public Sprite smugPortrait;
+    public Sprite surprisedPortrait;
+    public Sprite happyPortrait;
+    public Sprite blushingPortrait;
+    public Sprite impressedPortrait;
+    public Sprite annoyedPortrait;
+    public Sprite angryPortrait;
+    public Sprite sadPortrait;
+    public Sprite cryingPortrait;
+    public Sprite fearPortrait;
 
     
     void Start()

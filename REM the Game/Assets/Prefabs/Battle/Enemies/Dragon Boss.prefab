@@ -112,7 +112,15 @@ MonoBehaviour:
   wpnPower: 0
   armorPower: 5
   hasDied: 0
+  weakToPhysical: 0
+  weakToFire: 0
+  weakToIce: 1
+  weakToGrass: 0
+  weakToDream: 0
+  weakToNightmare: 0
   spriteRenderer: {fileID: 8230666452170821198}
   aliveSprite: {fileID: 0}
   deadSprite: {fileID: 0}
+  spriteHead: {fileID: 0}
   fadeSpeed: 1
+  currentTurnCounter: 0

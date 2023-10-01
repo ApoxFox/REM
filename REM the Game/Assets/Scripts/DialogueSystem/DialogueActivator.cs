@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class DialogueActivator : MonoBehaviour
 {
-
-    public string[] lines;
+    public DialogueLines[] lines;
 
     private bool canActivate;
 

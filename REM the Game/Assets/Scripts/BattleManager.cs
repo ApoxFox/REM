@@ -7,23 +7,41 @@ using UnityEngine.SceneManagement;
 
 public class BattleManager : MonoBehaviour
 {
+    [Header("Main Info")]
     public static BattleManager instance;
 
     private bool battleActive;
     public GameObject battleScene;
+    public GameObject battleBackground;
 
+    [Header("Game Objects and Positions")]
     public Transform[] playerPositions;
+    public Transform currentTurnPlayerPosition;
     public Transform[] enemyPositions;
 
     public BattleChar[] playerPrefabs;
     public BattleChar[] enemyPrefabs;
 
-    //lists are like arrays but they are much more flexible, especially when it comes to changing factors within it. For example, if a character dies, they can be removed from the list, but also added back if revived.
+    [Header("Turns and Rounds")]
+    //List of all enemies and players from the start
     public List<BattleChar> activeBattlers = new List<BattleChar>();
+    //List of all the currently alive battlers
+    public List<BattleChar> aliveBattlers = new List<BattleChar>();
+    //The random number that each battler recieves every round
+    public string[] turnNumbersDrawnList;
+    //List of the Players and Enemies in order of their turns
+    public List<BattleChar> turnBattlers = new List<BattleChar>();
 
-    [Header("Turns")]
+    public TMP_Text roundText;
+    public int currentRound;
     public int currentTurn;
     public bool turnWaiting;
+    public Transform[] turnPortraitPositions;
+    public GameObject[] turnPortraitHolder;
+    public Image[] turnSpriteHeads;
+    public int currentTurncounter;
+
+    [Header("Action Related")]
     public GameObject uiButtonsHolder;
 
     public BattleMove[] movesList;
@@ -31,9 +49,11 @@ public class BattleManager : MonoBehaviour
     public DamageNumbers damageNumbers;
 
     [Header("UI Updating Stuff")]
+    public Image[] playerStatPanels;
     public TMP_Text[] playerName;
     public TMP_Text[] playerHP;
     public TMP_Text[] playerMP;
+    public Image[] spriteHead;
     
     public GameObject targetMenu;
     public BattleTargetButton[] targetButtons;
@@ -56,15 +76,12 @@ public class BattleManager : MonoBehaviour
     public TMP_Text[] itemCharChoiceNames;
     public CharStats[] playerStats;  //this is to reference GameManager's stats
 
+    [Header("Battle Complete")]
     public string gameOverScene;
     public int rewardExp;
     public string[] rewardItems;
-
     public bool cannotFlee;
-
-
-
-
+    
     
     void Start()
     {
@@ -76,26 +93,37 @@ public class BattleManager : MonoBehaviour
     
     void Update()
     {
-        //FOR TESTING BATTLES
-        if(Input.GetKeyDown(KeyCode.N))
-        {
-            NextTurn();
-        }
+        //FOR TESTING
 
         if(battleActive)
         {
             if(turnWaiting)
             {
-                if(activeBattlers[currentTurn].isPlayer) //PLAYER TURN
+                if(turnBattlers[0] != null)
                 {
-                    uiButtonsHolder.SetActive(true);
-                }
-                else // ENEMY TURN
-                {
-                    uiButtonsHolder.SetActive(false);
+                    //this used to be set to turnBattlers[CurrentTurn] but I changed it for the new method of turns.           !!
+                    if(turnBattlers[0].isPlayer) //PLAYER TURN
+                    {
+                        uiButtonsHolder.SetActive(true);
+                    }
+                    else // ENEMY TURN
+                    {
+                        uiButtonsHolder.SetActive(false);
 
-                    //Enemy should attack
-                    StartCoroutine(EnemyMoveCo());
+                        //Enemy should attack
+                        StartCoroutine(EnemyMoveCo());
+                    }
+
+                    if(magicMenu.activeInHierarchy)
+                    {
+                        Camera.main.transform.position = new Vector3(turnBattlers[0].transform.position.x, turnBattlers[0].transform.position.y, Camera.main.transform.position.z);
+                        Camera.main.orthographicSize = 6;
+                    }
+                    else
+                    {
+                        Camera.main.transform.position = new Vector3(PlayerController.instance.transform.position.x, PlayerController.instance.transform.position.y, Camera.main.transform.position.z);
+                        Camera.main.orthographicSize = 10;
+                    }
                 }
             }
         }
@@ -111,17 +139,21 @@ public class BattleManager : MonoBehaviour
 
             GameManager.instance.battleActive = true;
 
+            //This is currently the only thing that the camera is doing. In the future, add more camera movement                               !!
             transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, transform.position.z);
+
             battleScene.SetActive(true);
+            battleBackground.SetActive(true);
+
+            currentRound = 0;
 
             AudioManager.instance.PlayBGM(0);
 
-            //this is for setting players and stats for players.
+            //this is for setting players and stats for players. It's also for setting the activeBattlers. Stats can stay connected to active battlers.
             for(int i = 0; i < playerPositions.Length; i++)
             {
                 if(GameManager.instance.playerStats[i].gameObject.activeInHierarchy)
                 {
-                    //you can't use the same for loop variable name within the same for loop, so make the next one the next letter in the alphabet (i , j , k ect.)
                     for(int j = 0; j < playerPrefabs.Length; j++)
                     {
                         if(playerPrefabs[j].charName == GameManager.instance.playerStats[i].characterName)
@@ -147,6 +179,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
 
+            //Here we set all of the active enemies in activeBattlers.
             for(int i = 0; i < enemiesToSpawn.Length; i++)
             {
                 if(enemiesToSpawn[i] != "")
@@ -162,21 +195,32 @@ public class BattleManager : MonoBehaviour
                     }
                 }
             }
+            CheckAliveBattlers();
+
+            StartNewRound();
+
+
+
+
 
             turnWaiting = true;
-            //!!!!!!!!!!! This is currently the way that turns are being set. In the future, it might be cool to set them via random number based on dice roll for every character.
-            currentTurn = Random.Range(0, activeBattlers.Count);
         }
+        
         UpdateUIStats();
     }
 
+    //This is for setting new turns and keeping count. This may need some work depending on the new system               !!
     public void NextTurn()
     {
         currentTurn++;
+        CheckAliveBattlers();
+        TurnSet();
 
-        if(currentTurn >= activeBattlers.Count)
+        //This is where each new round is set. Changed this from active to alive
+        if(currentTurn >= aliveBattlers.Count)
         {
             currentTurn = 0;
+            StartNewRound();
         }
 
         turnWaiting = true;
@@ -199,6 +243,8 @@ public class BattleManager : MonoBehaviour
 
             if(activeBattlers[i].currentHP == 0)
             {
+                activeBattlers[i].hasDied = true;
+
                 //Handle dead battler
                 if(activeBattlers[i].isPlayer)
                 {
@@ -211,6 +257,8 @@ public class BattleManager : MonoBehaviour
             }
             else
             {
+                activeBattlers[i].hasDied = false;
+
                 if(activeBattlers[i].isPlayer)
                 {
                     allPlayersDead = false;
@@ -219,7 +267,6 @@ public class BattleManager : MonoBehaviour
                 else
                 {
                     allEnemiesDead = false;
-
                 }
             }
         }
@@ -236,26 +283,231 @@ public class BattleManager : MonoBehaviour
                 //End battle in Defeat
                 StartCoroutine(GameOverCo());
             }
-
-            /*battleScene.SetActive(false);
-            GameManager.instance.battleActive = false;
-            battleActive = false;*/
         }
         else
         {
             //this section is for checking if the current turn player is already dead, and if so it will skip their turn.
-            while(activeBattlers[currentTurn].currentHP == 0)
+            if(turnBattlers[0] != null)
             {
-                currentTurn++;
-                if(currentTurn >= activeBattlers.Count)
+                if(turnBattlers[0].currentHP == 0)
                 {
-                    currentTurn = 0;
+                    NextTurn();
                 }
+            }
+            else
+            {
+                NextTurn();
             }
         }
     }
 
-    //Once a coroutine is called, unity keeps running the other functions in the list instead of stopping til it's done.
+    //This is for checking if a battler is dead or alive, and if so it will remove them from both the alive and turn list.
+    public void CheckAliveBattlers()
+    {
+        //I think it makes sense to clear this list every time and then re-add everyone back after the check.
+        //Remove old round positions
+        for(int i = 0; i < activeBattlers.Count; i++)
+        {
+            if(aliveBattlers[i] != null)
+            {
+                aliveBattlers[i] = null;
+            }
+        }
+
+        for(int i = 0; i < activeBattlers.Count; i++)
+        {
+            if(activeBattlers[i].currentHP > 0)
+            {
+                //j = activeBattler position
+                //for(int j = 0; j < aliveBattlers.Count; j++)
+                //{
+                    //if(aliveBattlers[i].charName == activeBattlers[j].charName)
+                    //{
+                        aliveBattlers[i] = activeBattlers[i];
+                    //}
+                //}
+            }
+        }
+    }
+
+    //Now we set random numbers for the battlers that are alive. This adds them to the turnNumbersDrawnList
+    public void StartNewRound()
+    {
+        //add a new round to the counter
+        currentRound++;
+        roundText.text = "ROUND " + currentRound;
+
+        //Remove old round positions aka Clear the list
+        for(int i = 0; i < turnNumbersDrawnList.Length; i++)
+        {
+            if(turnNumbersDrawnList[i] != "")
+            {
+                turnNumbersDrawnList[i] = "";
+            }
+        }
+
+        //randomize battler counter with all unique numbers
+        for(int i = 0; i < aliveBattlers.Count; i++)
+        {
+            if(aliveBattlers[i] != null)
+            {
+                //this randomizes the assigned number turn for the specific active battler
+                aliveBattlers[i].currentTurnCounter = Random.Range(0, 100);
+            }
+            
+        }
+
+        //This checks if the counter number is already taken, if so they roll for a new number
+        bool numberAlreadyTaken = true;
+
+        while(numberAlreadyTaken)
+        {
+            numberAlreadyTaken = false;
+
+            for(int i = 0; i < aliveBattlers.Count; i++)
+            {
+                if(aliveBattlers[i] != null)
+                {
+                    if(turnNumbersDrawnList[aliveBattlers[i].currentTurnCounter] == "")
+                    {
+                        turnNumbersDrawnList[aliveBattlers[i].currentTurnCounter] = aliveBattlers[i].charName;
+                    }
+                    else
+                    {
+                        aliveBattlers[i].currentTurnCounter = Random.Range(0, 100);
+                        numberAlreadyTaken = true;
+                    }
+                }
+            }
+
+        }
+                
+        SortBattlerTurns();
+    }
+
+    //This sorts the turns of all the battlers at the START of every round. 
+    public void SortBattlerTurns()
+    {
+        //move all battlers up the list
+
+        bool battlerAfterSpace = true;
+
+        while(battlerAfterSpace)
+        {
+            battlerAfterSpace = false;
+            
+            for(int i = 0; i < turnNumbersDrawnList.Length - 1; i++)
+            {
+                //basically this loop goes through all of the players, checks if they are empty and if they are moves the next battler back a space.
+                if(turnNumbersDrawnList[i] == "")
+                {
+                    turnNumbersDrawnList[i] = turnNumbersDrawnList[i + 1];
+                    turnNumbersDrawnList[i + 1] = "";
+
+                    //this will only be done if there's still space left to sort. If not, the loop finally ends with battlerAfterSpace = false.
+                    if(turnNumbersDrawnList[i] != "")
+                    {
+                        battlerAfterSpace = true;
+                    }
+                }
+            }
+        }
+
+        //i = turnlist position
+        for(int i = 0; i < turnNumbersDrawnList.Length; i++)
+        {
+            if(turnNumbersDrawnList[i] != "")
+            {
+                //j = activeBattler position
+                for(int j = 0; j < aliveBattlers.Count; j++)
+                {
+                    if(aliveBattlers[j] != null)
+                    {
+                        if(turnNumbersDrawnList[i] == aliveBattlers[j].charName)
+                        {
+                            turnBattlers[i] = aliveBattlers[j];
+                        }
+                    }
+                }
+            }
+            
+        } 
+
+        for(int i = 0; i < turnPortraitHolder.Length; i++)
+        {
+            if(turnNumbersDrawnList[i] != "")
+            {
+                turnSpriteHeads[i].sprite = turnBattlers[i].spriteHead;
+                turnPortraitHolder[i].SetActive(true);
+            }
+            else
+            {
+                turnPortraitHolder[i].SetActive(false);
+            }
+        }      
+    }
+
+    //Here we remove the previous battler at 0, then remove the dead battlers, then sort them all and change the UI display
+    public void TurnSet()
+    {
+        if(currentTurn > 0)
+        {
+            //First we remove the previous turn battler
+            turnBattlers[0] = null;
+
+            //Then we remove the dead battlers 
+            for(int i = 0; i < turnBattlers.Count; i++)
+            {
+                if(turnBattlers[i] != null)
+                {
+                    if(turnBattlers[i].currentHP <= 0)
+                    {
+                        turnBattlers[i] = null;
+                    }
+                }
+                
+            }
+
+            //This sorts all the turns downwards, accounting for the previous turn battler and the dead battlers.
+            bool battlerAfterSpace = true;
+
+            while(battlerAfterSpace)
+            {
+                battlerAfterSpace = false;
+
+                for(int i = 0; i < turnBattlers.Count - 1; i++)
+                {
+                    //basically this loop goes through all of the players, checks if they are empty and if they are moves the next item back a space.
+                    if(turnBattlers[i] == null)
+                    {
+                        turnBattlers[i] = turnBattlers[i + 1];
+                        turnBattlers[i + 1] = null;
+
+                        //this will only be done if there's still space left to sort. If not, the loop finally ends with battlerAfterSpace = false.
+                        if(turnBattlers[i] != null)
+                        {
+                            battlerAfterSpace = true;
+                        }
+                    }
+                }
+            }
+
+            for(int i = 0; i < turnPortraitHolder.Length; i++)
+            {
+                if(turnBattlers[i] != null)
+                {
+                    turnSpriteHeads[i].sprite = turnBattlers[i].spriteHead;
+                    turnPortraitHolder[i].SetActive(true);
+                }
+                else
+                {
+                    turnPortraitHolder[i].SetActive(false);
+                }
+            }  
+        }
+    }
+
+    //This is everything that happens during an ENEMIES TURN
     public IEnumerator EnemyMoveCo()
     {
         turnWaiting = false;
@@ -294,7 +546,7 @@ public class BattleManager : MonoBehaviour
                 movePower = (movesList[i].movePower);
             }
         }
-        Instantiate(enemyAttackEffect, activeBattlers[currentTurn].transform.position, activeBattlers[currentTurn].transform.rotation);
+        Instantiate(enemyAttackEffect, turnBattlers[0].transform.position, turnBattlers[0].transform.rotation);
 
         DealDamage(selectedTarget, movePower);
     }
@@ -308,7 +560,7 @@ public class BattleManager : MonoBehaviour
         float damageCalc = (attackPower / defensePower) * movePower * Random.Range(.9f, 1.1f);
         int damageToGive = Mathf.RoundToInt(damageCalc);
 
-        Debug.Log(activeBattlers[currentTurn].charName + " is dealing " + damageCalc + "(" + damageToGive + ") damage to " + activeBattlers[target].charName);
+        Debug.Log(turnBattlers[0].charName + " is dealing " + damageCalc + "(" + damageToGive + ") damage to " + activeBattlers[target].charName);
 
         
         if(activeBattlers[target].isPlayer)
@@ -340,19 +592,21 @@ public class BattleManager : MonoBehaviour
                 {
                     BattleChar playerData = activeBattlers[i];
 
-                    playerName[i].gameObject.SetActive(true);
+                    playerStatPanels[i].gameObject.SetActive(true);
                     playerName[i].text = playerData.charName;
                     playerHP[i].text = Mathf.Clamp(playerData.currentHP, 0, int.MaxValue) + "/" + playerData.maxHP;
                     playerMP[i].text = Mathf.Clamp(playerData.currentMP, 0, int.MaxValue) + "/" + playerData.MaxMP;
+                    spriteHead[i].sprite = playerData.spriteHead;
+                    
                 }
                 else
                 {
-                    playerName[i].gameObject.SetActive(false);
+                    playerStatPanels[i].gameObject.SetActive(false);
                 }
             }
             else
             {
-                playerName[i].gameObject.SetActive(false);
+                playerStatPanels[i].gameObject.SetActive(false);
             }
         }
     }
@@ -369,7 +623,7 @@ public class BattleManager : MonoBehaviour
                 movePower = (movesList[i].movePower);
             }
         }
-        Instantiate(enemyAttackEffect, activeBattlers[currentTurn].transform.position, activeBattlers[currentTurn].transform.rotation);
+        Instantiate(enemyAttackEffect, turnBattlers[0].transform.position, turnBattlers[0].transform.rotation);
 
         DealDamage(selectedTarget, movePower);
 
@@ -383,6 +637,8 @@ public class BattleManager : MonoBehaviour
     public void OpenTargetMenu(string moveName)
     {
         targetMenu.SetActive(true);
+        magicMenu.SetActive(false);
+        itemMenu.SetActive(false);
 
         List<int> Enemies = new List<int>();
 
@@ -414,6 +670,8 @@ public class BattleManager : MonoBehaviour
     public void OpenMagicMenu()
     {
         magicMenu.SetActive(true);
+        targetMenu.SetActive(false);
+        itemMenu.SetActive(false);
 
         for(int i = 0; i < magicButtons.Length; i++)
         {
@@ -608,6 +866,7 @@ public class BattleManager : MonoBehaviour
 
         UIFade.instance.FadeFromBlack();
         battleScene.SetActive(false);
+        battleBackground.SetActive(false);
         activeBattlers.Clear();
         currentTurn = 0;
         //GameManager.instance.battleActive = false;
@@ -632,6 +891,7 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(1.5f);
         battleScene.SetActive(false);
+        battleBackground.SetActive(false);
 
         SceneManager.LoadScene(gameOverScene);
     }

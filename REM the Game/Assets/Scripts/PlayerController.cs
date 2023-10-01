@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -7,7 +8,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     public float moveSpeed;
 
-    private Animator anim;
+    public Animator anim;
 
     public static PlayerController instance;
 
@@ -17,6 +18,14 @@ public class PlayerController : MonoBehaviour
     private Vector3 topRightLimit;
 
     public bool canMove = true;
+
+    public Vector2 moveInput;
+
+    [Header("World Interaction")]
+    public bool isIndoors;
+    public bool stairsFacingRight;
+    public bool onSideFacingStairs;
+    public Vector2 stairSpeed;
 
 
     void Start()
@@ -43,27 +52,61 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
-        //current movement and animation. Speed is not normalized diagonally. There is also no "Last Horizontal etc." so the idles snap forward.
         if(canMove)
         {
-            rb.velocity = new Vector2(Input.GetAxisRaw("Horizontal"),Input.GetAxisRaw("Vertical")) * moveSpeed;
-
-            anim.SetFloat("x", rb.velocity.x);
-            anim.SetFloat("y", rb.velocity.y);
-
-            if(rb.velocity.x != 0 || rb.velocity.y != 0)
+            //Are we on stairs or not?
+            if(onSideFacingStairs && Input.GetKey(KeyCode.A) || onSideFacingStairs && Input.GetKey(KeyCode.D))
             {
-                anim.SetBool("isMoving", true);
+                if(stairsFacingRight)
+                {
+                    if(Input.GetAxisRaw("Horizontal") == 1)
+                    {
+                        rb.velocity = (moveInput += stairSpeed) * moveSpeed;
+                    }
+                    if(Input.GetAxisRaw("Horizontal") == -1)
+                    {
+                        rb.velocity = (moveInput -= stairSpeed) * moveSpeed;
+                    }
+                    
+                }
+                else
+                {
+                    if(Input.GetAxisRaw("Horizontal") == -1)
+                    {
+                        rb.velocity = (moveInput += stairSpeed) * moveSpeed;
+                    }
+                    if(Input.GetAxisRaw("Horizontal") == +1)
+                    {
+                        rb.velocity = (moveInput -= stairSpeed) * moveSpeed;
+                    }
+                }
             }
             else
             {
-                anim.SetBool("isMoving", false);
+                //THIS IS THE MAIN MOVE INPUTS
+                rb.velocity = moveInput * moveSpeed;
+            }
+
+            moveInput.x = Input.GetAxisRaw("Horizontal");
+            moveInput.y = Input.GetAxisRaw("Vertical");
+
+            moveInput.Normalize();
+
+            anim.SetFloat("x", moveInput.x);
+            anim.SetFloat("y", moveInput.y);
+            anim.SetFloat("Speed", moveInput.sqrMagnitude);
+
+            if(Input.GetAxisRaw("Horizontal")== 1 || Input.GetAxisRaw("Horizontal") == -1 || Input.GetAxisRaw("Vertical") == 1 || Input.GetAxisRaw("Vertical") == -1)
+            {
+                anim.SetFloat("LastHorizontal", Input.GetAxisRaw("Horizontal"));
+                anim.SetFloat("LastVertical", Input.GetAxisRaw("Vertical"));
             }
         }
         else
         {
             //need to cancel out velocity because otherwise the rb can keep moving in some situations
             rb.velocity = Vector2.zero;
+            anim.SetFloat("Speed", 0);
         }
 
         //Keeps player in bounds of tilemap - may change later depending on cinemachine

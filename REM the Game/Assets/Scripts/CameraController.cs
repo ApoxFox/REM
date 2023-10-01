@@ -38,8 +38,16 @@ public class CameraController : MonoBehaviour
         
         if(!musicStarted)
         {
-            musicStarted = true;
-            AudioManager.instance.PlayBGM(musicToPlay);
+            if(musicToPlay == 100)
+            {
+                AudioManager.instance.StopMusic();
+            }
+            else
+            {
+                musicStarted = true;
+                AudioManager.instance.PlayBGM(musicToPlay);
+            }
+            
         }
     }
 }

@@ -29,4 +29,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameOverScene.unity
     guid: 0786b0a102ffe304bb0ab398587a44d8
+  - enabled: 1
+    path: Assets/Scenes/Cave.unity
+    guid: 8a51d91d459879544b70cd26a90a3d2c
+  - enabled: 1
+    path: Assets/Scenes/Rem Scenes/OrangeDream.unity
+    guid: 8d7057ebebb2f0342b3b7a7e1e689597
+  - enabled: 1
+    path: Assets/Scenes/Rem Scenes/TownSquare.unity
+    guid: 4f38cdf7659ce8b45a364f704bf848f6
   m_configObjects: {}

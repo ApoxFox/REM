@@ -13,7 +13,7 @@ public class BattleStarter : MonoBehaviour
     public bool activateOnExit;
 
     public float timeBetweenBattles = 10;
-    private float betweenBattleCounter;
+    [SerializeField] private float betweenBattleCounter;
 
     public bool deactivateAfterStarting;
 

@@ -53,3 +53,6 @@ TagManager:
   - name: Battle Chars
     uniqueID: 1915373807
     locked: 0
+  - name: UI
+    uniqueID: 1410834123
+    locked: 0

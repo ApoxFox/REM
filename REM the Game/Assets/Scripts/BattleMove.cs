@@ -7,6 +7,8 @@ using UnityEngine;
 public class BattleMove
 {
     public string moveName;
+    public bool isAttack, isBuff, isDebuff, isSupport;
+    public string elementalType;
     public int movePower;
     public int moveCost;
     public AttackEffect theEffect;

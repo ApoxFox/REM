@@ -9,15 +9,25 @@ public class BattleChar : MonoBehaviour
 
 
     public string charName;
+    [Header("Stats")]
     public int currentHP, maxHP, currentMP, MaxMP, strength, defence, wpnPower, armorPower;
     public bool hasDied;
+    [Header("Weaknesses")]
+    public bool weakToPhysical;
+    public bool weakToFire;
+    public bool weakToIce;
+    public bool weakToGrass;
+    public bool weakToDream;
+    public bool weakToNightmare;
 
     public SpriteRenderer spriteRenderer;
     public Sprite aliveSprite;
     public Sprite deadSprite;
+    public Sprite spriteHead;
 
     private bool shouldFade;
     public float fadeSpeed = 1f;
+    public int currentTurnCounter;
 
     void Start()
     {
