@@ -29468,6 +29468,7 @@ MonoBehaviour:
   nameBox: {fileID: 7515259840238878374}
   portrait: {fileID: 8798564499053830441}
   rightPortrait: {fileID: 1297168379394034349}
+  emoteVisible: 1
   newDialogueLines: []
   characterList:
   - {fileID: 8288563825196984588, guid: dd0f2f6d99e17374fa620a242a5fa6ff, type: 3}
@@ -29832,7 +29833,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clockWidget: {fileID: 4802730688082552782}
-  timeOfDay: 0
+  timeOfDay: 1
   timeOfDayText: {fileID: 7392738275413214200}
   isSunrise: 0
   isDayTime: 0

@@ -7,6 +7,10 @@ public class DialogueActivator : MonoBehaviour
     public DialogueLines[] lines;
 
     private bool canActivate;
+    public GameObject emote;
+    public Animator emoteAnim;
+    public SpriteRenderer emoteSprite;
+    public bool hasBeenChecked;
 
     public bool isPerson = true;
 
@@ -24,8 +28,28 @@ public class DialogueActivator : MonoBehaviour
     {
         if(canActivate && Input.GetButtonDown("Fire1") && !DialogueManager.instance.dialogueBox.activeInHierarchy && GameMenu.instance.theMenu.activeInHierarchy == false)
         {
+            emoteAnim.SetBool("hasChecked", true);
+            hasBeenChecked = true;
+
+            
             DialogueManager.instance.ShowDialogue(lines, isPerson);
             DialogueManager.instance.ShouldActivateQuestAtEnd(questToMark, markComplete);
+        }
+        
+        if(DialogueManager.instance.emoteVisible)
+        {
+            if(hasBeenChecked == true)
+            {
+                emoteSprite.color = new Vector4(1, 1, 1, 0.5f);
+            }
+            else
+            {
+                emoteSprite.color = new Vector4(1, 1, 1, 1f);
+            }
+        }
+        else
+        {
+            emoteSprite.color = new Vector4(1, 1, 1, 0f);
         }
     }
 

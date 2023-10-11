@@ -47,6 +47,9 @@ TagManager:
   - name: Player
     uniqueID: 23446367
     locked: 0
+  - name: Emotes
+    uniqueID: 174807105
+    locked: 0
   - name: Battle BG
     uniqueID: 946717881
     locked: 0

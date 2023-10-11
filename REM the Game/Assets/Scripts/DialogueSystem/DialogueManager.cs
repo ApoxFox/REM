@@ -15,6 +15,7 @@ public class DialogueManager : MonoBehaviour
     public GameObject nameBox;
     public Image portrait;
     public Image rightPortrait;
+    public bool emoteVisible = true;
 
     public DialogueLines[] newDialogueLines;
     
@@ -57,6 +58,7 @@ public class DialogueManager : MonoBehaviour
                         dialogueBox.SetActive(false);
                         portrait.gameObject.SetActive(false);
                         rightPortrait.gameObject.SetActive(false);
+                        emoteVisible = true;
 
                         isInDialogue = false;
 
@@ -134,6 +136,7 @@ public class DialogueManager : MonoBehaviour
     {
         //The dialogue begins. First it sets up the new lines from the activator, then it sets the current line to 0, then the textbox is set active, then it checks if it is a name line, then it sets justStarted for the dialogue sequence, then it sets the dialogue from zero to current line, then shuts off character controller movement.
         isInDialogue = true;
+        emoteVisible = false;
 
         newDialogueLines = newLines;
 

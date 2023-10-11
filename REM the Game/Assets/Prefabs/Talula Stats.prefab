@@ -63,7 +63,7 @@ MonoBehaviour:
   equippedArmor: 
   characterPortrait: {fileID: 21300000, guid: 0434126c2f3891d40865a7a43200e35b, type: 3}
   spriteHead: {fileID: 21300000, guid: e0ddba6d3fcf21f49949fcc95c849aac, type: 3}
-  neutralPortrait: {fileID: 21300000, guid: 0434126c2f3891d40865a7a43200e35b, type: 3}
+  neutralPortrait: {fileID: 21300000, guid: f15211c36591542409089d0c70c2b8a1, type: 3}
   smugPortrait: {fileID: 21300000, guid: 0434126c2f3891d40865a7a43200e35b, type: 3}
   surprisedPortrait: {fileID: 21300000, guid: 0434126c2f3891d40865a7a43200e35b, type: 3}
   happyPortrait: {fileID: 21300000, guid: 0434126c2f3891d40865a7a43200e35b, type: 3}

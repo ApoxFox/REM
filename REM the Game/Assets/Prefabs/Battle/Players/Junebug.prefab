@@ -53,7 +53,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -72,9 +72,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1915373807
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 6190e1c2b41b7c14d826a6cb3eec7e5c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: eaf846da937c2d941a4ff05a09877495, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -118,7 +118,7 @@ MonoBehaviour:
   weakToDream: 0
   weakToNightmare: 1
   spriteRenderer: {fileID: 7670971958740076125}
-  aliveSprite: {fileID: 21300000, guid: 6190e1c2b41b7c14d826a6cb3eec7e5c, type: 3}
+  aliveSprite: {fileID: 21300000, guid: eaf846da937c2d941a4ff05a09877495, type: 3}
   deadSprite: {fileID: -1984874918, guid: a6e50fe4e78555349a837f52e7761d07, type: 3}
   spriteHead: {fileID: 21300000, guid: 3cd0b884462d2904c96edf2760b5a157, type: 3}
   fadeSpeed: 1
